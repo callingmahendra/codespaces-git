@@ -1,0 +1,71 @@
+import base64
+import vertexai
+from vertexai.generative_models import GenerativeModel, Part
+import vertexai.preview.generative_models as generative_models
+import subprocess
+
+def run_command(command):
+  """Runs a  command and returns the output.
+
+  Args:
+    command: The Docker command to run as a list of strings.
+
+  Returns:
+    A tuple containing the output of the command, the return code, and any errors.
+  """
+  try:
+    process = subprocess.run(
+        command,
+        capture_output=True,
+        text=True,
+        check=True
+    )
+    return process.stdout, process.returncode, None
+  except subprocess.CalledProcessError as e:
+    return None, e.returncode, e.stderr
+  
+def multiturn_generate_content():
+  vertexai.init(project="gsh002", location="us-central1")
+  model = GenerativeModel(
+    "gemini-1.5-flash-001",
+    system_instruction=[textsi_1]
+  )
+  #chat = model.get()
+  response = model.generate_content(
+      [document1_1, text1_1],
+      generation_config=generation_config,
+      safety_settings=safety_settings,
+      stream=False
+  )
+
+  file_content = response.text;
+  with open('Dockerfile', 'w') as file:
+    file.write(file_content.replace("```","#"))
+
+  command = ["docker", "build", "." , "-t", "app-react"]
+  output, returncode, error = run_command(command)
+  print(output, returncode,error)
+  command = ["gcloud", "projects", "describe", "gsh002"]
+  output, returncode, error = run_command(command)
+  print(output, returncode,error)
+document1_1 = Part.from_data(
+    mime_type="text/plain",
+    data=base64.b64decode("""QzpcY29kZVxjb2Rlc3BhY2VzLXJlYWN0LW1haW5caW5kZXguaHRtbA0KPCFET0NUWVBFIGh0bWw+DQo8aHRtbCBsYW5nPSJlbiI+DQogIDxoZWFkPg0KICAgIDxtZXRhIGNoYXJzZXQ9InV0Zi04IiAvPg0KICAgIDxsaW5rIHJlbD0iaWNvbiIgaHJlZj0iL2Zhdmljb24uaWNvIiAvPg0KICAgIDxtZXRhIG5hbWU9InZpZXdwb3J0IiBjb250ZW50PSJ3aWR0aD1kZXZpY2Utd2lkdGgsIGluaXRpYWwtc2NhbGU9MSIgLz4NCiAgICA8bWV0YSBuYW1lPSJ0aGVtZS1jb2xvciIgY29udGVudD0iIzAwMDAwMCIgLz4NCiAgICA8bWV0YQ0KICAgICAgbmFtZT0iZGVzY3JpcHRpb24iDQogICAgICBjb250ZW50PSJXZWIgc2l0ZSBjcmVhdGVkIHVzaW5nIEB2aXRlanMvcGx1Z2luLXJlYWN0Ig0KICAgIC8+DQogICAgPGxpbmsgcmVsPSJhcHBsZS10b3VjaC1pY29uIiBocmVmPSIvbG9nbzE5Mi5wbmciIC8+DQogICAgPCEtLQ0KICAgICAgbWFuaWZlc3QuanNvbiBwcm92aWRlcyBtZXRhZGF0YSB1c2VkIHdoZW4geW91ciB3ZWIgYXBwIGlzIGluc3RhbGxlZCBvbiBhDQogICAgICB1c2VyJ3MgbW9iaWxlIGRldmljZSBvciBkZXNrdG9wLiBTZWUgaHR0cHM6Ly9kZXZlbG9wZXJzLmdvb2dsZS5jb20vd2ViL2Z1bmRhbWVudGFscy93ZWItYXBwLW1hbmlmZXN0Lw0KICAgIC0tPg0KICAgIDxsaW5rIHJlbD0ibWFuaWZlc3QiIGhyZWY9Ii9tYW5pZmVzdC5qc29uIiAvPg0KICAgIDx0aXRsZT5SZWFjdCBBcHA8L3RpdGxlPg0KICA8L2hlYWQ+DQogIDxib2R5Pg0KICAgIDxub3NjcmlwdD5Zb3UgbmVlZCB0byBlbmFibGUgSmF2YVNjcmlwdCB0byBydW4gdGhpcyBhcHAuPC9ub3NjcmlwdD4NCiAgICA8ZGl2IGlkPSJyb290Ij48L2Rpdj4NCiAgICA8IS0tDQogICAgICBUaGlzIEhUTUwgZmlsZSBpcyBhIHRlbXBsYXRlLg0KICAgICAgSWYgeW91IG9wZW4gaXQgZGlyZWN0bHkgaW4gdGhlIGJyb3dzZXIsIHlvdSB3aWxsIHNlZSBhbiBlbXB0eSBwYWdlLg0KDQogICAgICBZb3UgY2FuIGFkZCB3ZWJmb250cywgbWV0YSB0YWdzLCBvciBhbmFseXRpY3MgdG8gdGhpcyBmaWxlLg0KICAgICAgVGhlIGJ1aWxkIHN0ZXAgd2lsbCBwbGFjZSB0aGUgYnVuZGxlZCBzY3JpcHRzIGludG8gdGhlIDxib2R5PiB0YWcuDQoNCiAgICAgIFRvIGJlZ2luIHRoZSBkZXZlbG9wbWVudCwgcnVuIGBucG0gc3RhcnRgIG9yIGB5YXJuIHN0YXJ0YC4NCiAgICAgIFRvIGNyZWF0ZSBhIHByb2R1Y3Rpb24gYnVuZGxlLCB1c2UgYG5wbSBydW4gYnVpbGRgIG9yIGB5YXJuIGJ1aWxkYC4NCiAgICAtLT4NCiAgPC9ib2R5Pg0KICA8c2NyaXB0IHR5cGU9Im1vZHVsZSIgc3JjPSIvc3JjL2luZGV4LmpzeCI+PC9zY3JpcHQ+DQo8L2h0bWw+DQoNCkM6XGNvZGVcY29kZXNwYWNlcy1yZWFjdC1tYWluXHZpdGUuY29uZmlnLmpzDQppbXBvcnQgeyBkZWZpbmVDb25maWcgfSBmcm9tICJ2aXRlIjsNCmltcG9ydCByZWFjdCBmcm9tICJAdml0ZWpzL3BsdWdpbi1yZWFjdCI7DQoNCi8vIGh0dHBzOi8vdml0ZWpzLmRldi9jb25maWcvDQpleHBvcnQgZGVmYXVsdCBkZWZpbmVDb25maWcoew0KICBwbHVnaW5zOiBbcmVhY3QoKV0sDQogIHRlc3Q6IHsNCiAgICBnbG9iYWxzOiB0cnVlLA0KICAgIGVudmlyb25tZW50OiAnanNkb20nLA0KICB9LA0KfSkNCg0KQzpcY29kZVxjb2Rlc3BhY2VzLXJlYWN0LW1haW5cc3JjXEFwcC5jc3MNCi5BcHAgew0KICB0ZXh0LWFsaWduOiBjZW50ZXI7DQp9DQoNCi5BcHAtbG9nbyB7DQogIGhlaWdodDogNDB2bWluOw0KICBwb2ludGVyLWV2ZW50czogbm9uZTsNCn0NCg0KLkFwcC1oZWFkZXIgew0KICBiYWNrZ3JvdW5kLWNvbG9yOiAjMjgyYzM0Ow0KICBtaW4taGVpZ2h0OiAxMDB2aDsNCiAgZGlzcGxheTogZmxleDsNCiAgZmxleC1kaXJlY3Rpb246IGNvbHVtbjsNCiAgYWxpZ24taXRlbXM6IGNlbnRlcjsNCiAganVzdGlmeS1jb250ZW50OiBjZW50ZXI7DQogIGZvbnQtc2l6ZTogY2FsYygxMHB4ICsgMnZtaW4pOw0KICBjb2xvcjogd2hpdGU7DQp9DQoNCi5BcHAtbGluayB7DQogIGNvbG9yOiAjNjFkYWZiOw0KfQ0KDQouaGVhcnQgew0KICBjb2xvcjogI2ZmMDAwMDsNCn0NCg0KLnNtYWxsIHsNCiAgZm9udC1zaXplOiAwLjc1cmVtOw0KfQ0KQzpcY29kZVxjb2Rlc3BhY2VzLXJlYWN0LW1haW5cc3JjXGluZGV4LmNzcw0KYm9keSB7DQogIG1hcmdpbjogMDsNCiAgZm9udC1mYW1pbHk6IC1hcHBsZS1zeXN0ZW0sIEJsaW5rTWFjU3lzdGVtRm9udCwgJ1NlZ29lIFVJJywgJ1JvYm90bycsICdPeHlnZW4nLA0KICAgICdVYnVudHUnLCAnQ2FudGFyZWxsJywgJ0ZpcmEgU2FucycsICdEcm9pZCBTYW5zJywgJ0hlbHZldGljYSBOZXVlJywNCiAgICBzYW5zLXNlcmlmOw0KICAtd2Via2l0LWZvbnQtc21vb3RoaW5nOiBhbnRpYWxpYXNlZDsNCiAgLW1vei1vc3gtZm9udC1zbW9vdGhpbmc6IGdyYXlzY2FsZTsNCn0NCg0KY29kZSB7DQogIGZvbnQtZmFtaWx5OiBzb3VyY2UtY29kZS1wcm8sIE1lbmxvLCBNb25hY28sIENvbnNvbGFzLCAnQ291cmllciBOZXcnLA0KICAgIG1vbm9zcGFjZTsNCn0NCg0KQzpcY29kZVxjb2Rlc3BhY2VzLXJlYWN0LW1haW5cc3JjXHJlcG9ydFdlYlZpdGFscy5qcw0KY29uc3QgcmVwb3J0V2ViVml0YWxzID0gb25QZXJmRW50cnkgPT4gew0KICBpZiAob25QZXJmRW50cnkgJiYgb25QZXJmRW50cnkgaW5zdGFuY2VvZiBGdW5jdGlvbikgew0KICAgIGltcG9ydCgnd2ViLXZpdGFscycpLnRoZW4oKHsgZ2V0Q0xTLCBnZXRGSUQsIGdldEZDUCwgZ2V0TENQLCBnZXRUVEZCIH0pID0+IHsNCiAgICAgIGdldENMUyhvblBlcmZFbnRyeSk7DQogICAgICBnZXRGSUQob25QZXJmRW50cnkpOw0KICAgICAgZ2V0RkNQKG9uUGVyZkVudHJ5KTsNCiAgICAgIGdldExDUChvblBlcmZFbnRyeSk7DQogICAgICBnZXRUVEZCKG9uUGVyZkVudHJ5KTsNCiAgICB9KTsNCiAgfQ0KfTsNCg0KZXhwb3J0IGRlZmF1bHQgcmVwb3J0V2ViVml0YWxzOw0KDQpDOlxjb2RlXGNvZGVzcGFjZXMtcmVhY3QtbWFpblxzcmNcc2V0dXBUZXN0cy5qcw0KLy8gamVzdC1kb20gYWRkcyBjdXN0b20gamVzdCBtYXRjaGVycyBmb3IgYXNzZXJ0aW5nIG9uIERPTSBub2Rlcy4NCi8vIGFsbG93cyB5b3UgdG8gZG8gdGhpbmdzIGxpa2U6DQovLyBleHBlY3QoZWxlbWVudCkudG9IYXZlVGV4dENvbnRlbnQoL3JlYWN0L2kpDQovLyBsZWFybiBtb3JlOiBodHRwczovL2dpdGh1Yi5jb20vdGVzdGluZy1saWJyYXJ5L2plc3QtZG9tDQppbXBvcnQgJ0B0ZXN0aW5nLWxpYnJhcnkvamVzdC1kb20nOw0KDQo="""))
+text1_1 = """generate a docker file for a application given in context. provide your response in a file format which can be use to create file. don\'t provide any additional information or instructions"""
+textsi_1 = """you are a devops engineer and task to create a docker file for an application. look at the context for more details on application. also don't send markup in response"""
+
+generation_config = {
+    "max_output_tokens": 8192,
+    "temperature": 1,
+    "top_p": 0.95,
+}
+
+safety_settings = {
+    generative_models.HarmCategory.HARM_CATEGORY_HATE_SPEECH: generative_models.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+    generative_models.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: generative_models.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+    generative_models.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: generative_models.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+    generative_models.HarmCategory.HARM_CATEGORY_HARASSMENT: generative_models.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+}
+
+multiturn_generate_content()
+
